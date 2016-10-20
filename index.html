@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<!--
+ * YarmRecorder.js
+ * Copyright (c) 2016 Joe Sulmar
+ * provided under MIT License
+-->
+<html>
+    <head>
+        <title>YARM MediaRecorder Example</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/yarm.css">
+    </head>
+    <body>
+        <div>Hello <span class="make-red-test">World</span>.</div>
+        <pre id="log"></pre>
+        
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+        <script src="js/YarmLocalMedia.js"></script>
+        <script src="js/YarmRecorder.js"></script>
+        <script>
+            function dlog(msg) {
+                log.innerHTML += "\n" + msg ;
+                console.log(msg);
+            }
+            dlog("running jQuery version: " + $.fn.jquery);
+            YarmLocalMedia.test();
+            YarmRecorder.test();
+        </script>
+    </body>
+</html>
+

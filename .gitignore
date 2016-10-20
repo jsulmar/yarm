@@ -1,0 +1,11 @@
+## MAC environment exclusions
+*.DS_Store
+*.log
+
+## IDE project files
+/nbproject
+*.tmproj
+
+## application exclusions
+/uploads
+
