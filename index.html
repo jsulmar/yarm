@@ -11,21 +11,54 @@
         <link rel="stylesheet" type="text/css" href="css/yarm.css">
     </head>
     <body>
-        <div>Hello <span class="make-red-test">World</span>.</div>
-        <pre id="log"></pre>
-        
+        <h1>YARM  Yet Another Recorder Module -- MediaRecorder Example</h1>
+        <section>        
+            <h2>Recorder</h2>
+            <div id='btns'>
+                <button  class="button disabled" id='enable'>Enable Microphone</button>
+                <button  class="button disabled" id='record'>Record</button>
+                <button  class="button disabled" id='stop'>Stop</button>
+                <button  class="tooltip button disabled" id='save'>Save </button>
+                <button  class="tooltip button disabled" id='upload'>Upload </button>
+            </div>
+
+            <div id="player">
+                <span class="name"></span> 
+                <a id="player-save"></a>
+                <audio ></audio>  
+            </div>
+        </section>     
+        <section class="v-space">
+            <h2>Notes</h2>
+            <ul>
+                <li>provides a basic voice recorder with the ability to playback, save (to workstation), and upload (to host) an .ogg file.</li>
+                <li>requires desktop browser Chrome v49+ or Firefox v30+</li>
+                <li>requires a local microphone</li>
+                <li>for Chrome, a secure origin is required: HTTPS or localhost.</li>
+
+            </ul>
+        </section>
+
+
+        <section class="v-space log">
+            <pre id="log"></pre>
+        </section>
+
+        <footer>
+            <section class="v-space">
+                <hr>
+                <p>Copyright (c) 2016 Joe Sulmar -- provided under MIT License</p>
+            </section>
+        </footer>
+
+
+
+
         <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+        <script src="js/YarmUi.js"></script>
         <script src="js/YarmLocalMedia.js"></script>
         <script src="js/YarmRecorder.js"></script>
-        <script>
-            function dlog(msg) {
-                log.innerHTML += "\n" + msg ;
-                console.log(msg);
-            }
-            dlog("running jQuery version: " + $.fn.jquery);
-            YarmLocalMedia.test();
-            YarmRecorder.test();
-        </script>
+        
     </body>
 </html>
 

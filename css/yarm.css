@@ -4,11 +4,39 @@
  * provided under MIT License
  */
 
-.make-red-test{
-    color:red;
-}
+/*
+ * page layout
+ */
 
-pre{
-    margin-top:50px;
+.log{
     background:LightGrey;
 }
+
+.v-space{
+    margin-top:50px;    
+}
+
+/*
+ * components initial state
+ */
+ #btns .button{
+    display:none;
+    margin-top:30px;
+  }
+
+  #btns .button.disabled {
+    opacity: 0.45; 
+    cursor: not-allowed;
+  }
+
+  #player{
+    display:none;
+    margin-top:30px;
+    margin-left:15px;
+  }
+
+  #player .name{
+    display:block;
+    margin-bottom:10px;
+  }
+  
