@@ -18,7 +18,7 @@
 var YarmUi = (function () {
 
     /*
-     * display helper methods
+     * button state helper methods
      */
     function btnDisable(btn) {
         $('#' + btn).addClass("disabled");
@@ -67,7 +67,9 @@ var YarmUi = (function () {
      * button handlers
      */
     $("#enable").click(function (e) {
-        btnState('ready');
+        YarmLocalMedia.getAudioStream(function (stream) {
+            btnState('ready');
+        });
     });
     $("#record").click(function (e) {
         btnState('record');
@@ -98,7 +100,9 @@ var YarmUi = (function () {
      */
     btnState('enable');
 
-    //expose only public methods 
+    /*
+     *  expose only public methods 
+     */
     return {
         log: function (txt) {
             _log(txt);
