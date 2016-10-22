@@ -16,6 +16,12 @@
  *  
  */
 var YarmUi = (function () {
+    var yrec;   //the recorder object, constructed by 'enable' handler
+    var stream; //the MediaStream to be used for the recorder
+    media = {
+        type: 'audio/ogg',
+        ext: '.ogg'
+    };
 
     /*
      * button state helper methods
@@ -26,7 +32,6 @@ var YarmUi = (function () {
     function btnEnable(btn) {
         $('#' + btn).removeClass("disabled");
     }
-
 
     /*
      * state transition manager
@@ -63,18 +68,43 @@ var YarmUi = (function () {
     }
 
 
+    function createRecorder(strm) {
+        if (strm !== undefined) {
+            stream = strm;
+            yrec = new YarmRecorder(strm, media, recordingStopped);
+            btnState('ready');
+        }
+    }
+
+    function recordingStopped(url, name) {
+        $('#player audio').attr({src: url, controls: true});//apply attributes to <audio> tag
+        $('#player .name').text(name);                      //display the recording name
+        $('#player a').attr({href: url, download: name});   //attach url to 'save' link
+    }
+
     /*
      * button handlers
      */
     $("#enable").click(function (e) {
-        YarmLocalMedia.getAudioStream(function (stream) {
-            btnState('ready');
-        });
+        /*
+         * YarmLocalMedia will either return a steam or undefined.
+         * In the latter case, it will create a stream and invoke its callback
+         * once the stream is created.
+         * 
+         * The following invokes createRecorder once if the stream exists, or
+         * twice if the stream is created.
+         */
+        createRecorder(YarmLocalMedia.getAudioStream(function (stream) {
+            createRecorder(stream);
+        }));
+
     });
     $("#record").click(function (e) {
+        yrec.start();
         btnState('record');
     });
     $("#stop").click(function (e) {
+        yrec.stop();
         btnState('stop');
     });
     $("#save").click(function (e) {
