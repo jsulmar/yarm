@@ -16,21 +16,26 @@
  *  
  */
 var YarmUi = (function () {
+    var DEFAULTS = {
+        media: {type: 'audio/ogg', ext: '.ogg'},
+        uploadHandlerUrl: window.location.href + '/php/catch.php',
+        uploadDestination: window.location.href + '/uploads'
+    };
+
     var yrec;   //the recorder object, constructed by 'enable' handler
     var stream; //the MediaStream to be used for the recorder
-    media = {
-        type: 'audio/ogg',
-        ext: '.ogg'
-    };
+
+    //configuiration, must be set by invoking this.getConfig
+    var config = DEFAULTS;
 
     /*
      * button state helper methods
      */
     function btnDisable(btn) {
-        $('#' + btn).addClass("disabled");
+        $('#' + btn).prop('disabled', true);
     }
     function btnEnable(btn) {
-        $('#' + btn).removeClass("disabled");
+        $('#' + btn).prop('disabled', false);
     }
 
     /*
@@ -71,7 +76,7 @@ var YarmUi = (function () {
     function createRecorder(strm) {
         if (strm !== undefined) {
             stream = strm;
-            yrec = new YarmRecorder(strm, media, recordingStopped);
+            yrec = new YarmRecorder(strm, config.media, recordingStopped);
             btnState('ready');
         }
     }
@@ -108,22 +113,56 @@ var YarmUi = (function () {
         btnState('stop');
     });
     $("#save").click(function (e) {
+        document.getElementById('player-save').click();
         btnState('stop');
     });
     $("#upload").click(function (e) {
+
+        var fd = new FormData();
+        fd.append("upload_file[filename]", yrec.getBlob(), $('#player .name').text());
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", config.uploadHandlerUrl, true);
+
+        xhr.onreadystatechange = function (evt) {
+            switch (this.status) {
+                case 0: /* no-op*/
+                    break;
+                case 200:
+                    if (this.readyState == 4) {
+                        var response = jQuery.parseJSON(this.responseText);
+                        if (!response) {
+                            noteUploadResult(false, "AJAX null response");
+                        } else if (response.status != 'success') {
+                            noteUploadResult(false, "Upload-- " + this.responseText);
+                        } else {
+                            //success
+                            noteUploadResult(true, "Upload-- " + this.responseText);
+                        }
+                    }
+                    break;
+                default:
+                    noteUploadResult(false, this.statusText);
+            }
+            ;
+        };
+        xhr.send(fd);
+
         btnState('stop');
     });
 
-
-    /*
-     * logging utility: print to console and screen 
-     * @param msg: the message to be displayed
-     */
-    function _log(msg) {
-        log.innerHTML += "\n" + msg;
-        console.log(msg);
+    function noteUploadResult(successFlg, msg) {
+        if (successFlg) {
+            console.log(msg);
+        } else {
+            console.error(msg);
+        }
     }
 
+    //prevent sticky button outline when clicking buttons
+    $("#btns .button").click(function (e) {
+        this.blur();
+    });
 
     /*
      * specify the initial state
@@ -131,11 +170,28 @@ var YarmUi = (function () {
     btnState('enable');
 
     /*
-     *  expose only public methods 
+     *  expose public methods 
      */
     return {
-        log: function (txt) {
-            _log(txt);
+        /*
+         * configure the module 
+         * @param arguments[0]: an object containing optional configuration parameters
+         */
+        setConfig: function () {
+            var args = arguments[0] || {};
+            for (var arg in args) {
+                config[arg] = args[arg];
+            }
+        },
+
+        /*
+         * logging utility: print to console and screen 
+         * @param msg: the message to be displayed
+         */
+        _log: function (msg) {
+            log.innerHTML += "\n" + msg;
+            console.log(msg);
         }
     };
 })();
+
