@@ -4,6 +4,7 @@
  * provided under MIT License
  */
 
+
 /*
  * page layout
  */
@@ -19,24 +20,24 @@
 /*
  * components initial state
  */
- #btns .button{
+#btns .button{
     display:none;
     margin-top:30px;
-  }
+}
 
-  #btns .button.disabled {
+/* visually disables the button but does not stop click events */
+#btns .button.disabled {
     opacity: 0.45; 
     cursor: not-allowed;
-  }
+}
 
-  #player{
+#player{
     display:none;
     margin-top:30px;
     margin-left:15px;
-  }
+}
 
-  #player .name{
+#player .name{
     display:block;
     margin-bottom:10px;
-  }
-  
+}

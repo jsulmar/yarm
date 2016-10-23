@@ -7,5 +7,6 @@
 *.tmproj
 
 ## application exclusions
-/uploads
+/php/logError.txt
+/uploads/*.ogg
 

@@ -14,6 +14,9 @@ provided under MIT License
 ##Future Plans
 * provide flash fallback for unsupported browsers
 * add support for mobile clients
+* add recording time limit
+* add VU meter and recording timer
+* add upload progress indicator
 
 ##Installation
 1. clone or download and unzip the files

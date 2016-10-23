@@ -15,11 +15,11 @@
         <section>        
             <h2>Recorder</h2>
             <div id='btns'>
-                <button  class="button disabled" id='enable'>Enable Microphone</button>
-                <button  class="button disabled" id='record'>Record</button>
-                <button  class="button disabled" id='stop'>Stop</button>
-                <button  class="tooltip button disabled" id='save'>Save </button>
-                <button  class="tooltip button disabled" id='upload'>Upload </button>
+                <button  class="button" disabled id='enable'>Enable Microphone</button>
+                <button  class="button" disabled id='record'>Record</button>
+                <button  class="button" disabled id='stop'>Stop</button>
+                <button  class="button" disabled id='save'>Save </button>
+                <button  class="button" disabled id='upload'>Upload </button>
             </div>
 
             <div id="player">
@@ -58,7 +58,22 @@
         <script src="js/YarmUi.js"></script>
         <script src="js/YarmLocalMedia.js"></script>
         <script src="js/YarmRecorder.js"></script>
-        
+
+        <script>
+            /*
+             * optionally, set configuration to override DEFAULTS
+             */
+
+            /* (example)
+             YarmUi.setConfig({ 
+             media: {type: 'audio/ogg', ext: '.ogg'},
+             uploadHandlerUrl: 'http://customloc/upload.php',
+             uploadDestination:'http://customloc/uploads'
+             });
+             */
+
+
+        </script>
     </body>
 </html>
 
