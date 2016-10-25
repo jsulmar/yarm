@@ -9,4 +9,5 @@
 ## application exclusions
 /php/logError.txt
 /uploads/*.ogg
+/dev
 

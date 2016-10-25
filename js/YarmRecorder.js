@@ -43,7 +43,7 @@ var YarmRecorder = function (stream, media, stoppedCallback) {
             //the recording has completed
             self.blob = new Blob(self.buff, {type: media.type});
             self.url = URL.createObjectURL(self.blob);
-            self.name = Date.now() + `${media.ext}`;
+            self.name = Date.now() + media.ext;
             self.stoppedCallback && self.stoppedCallback(self.url, self.name);
         }
     };
