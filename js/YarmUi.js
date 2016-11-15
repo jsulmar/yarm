@@ -15,27 +15,45 @@
  *  stop    stopped recording is complete
  *  
  */
-var YarmUi = (function () {
+
+
+var YarmUi = function () {
     var DEFAULTS = {
         media: {type: 'audio/ogg', ext: '.ogg'},
         uploadHandlerUrl: window.location.href + '/php/catch.php',
-        uploadDestination: window.location.href + '/uploads'
+        playerType: "YarmHtmlPlayer"
     };
+
+    /*
+     * initialize configuration to default values
+     */
+    var config = DEFAULTS;
+
+    /*
+     * overide DEFAULTS with args supplied to the constructor (if any)
+     */
+    var args = arguments[0] || {};
+    for (var arg in args) {
+        config[arg] = args[arg];
+    }
+
+    /*
+    * instantiate a player of the specified type
+    */
+    var player= new YarmPlayer('#player', new window[config.playerType]() );
 
     var yrec;   //the recorder object, constructed by 'enable' handler
     var stream; //the MediaStream to be used for the recorder
 
-    //configuiration, must be set by invoking this.getConfig
-    var config = DEFAULTS;
 
     /*
      * button state helper methods
      */
     function btnDisable(btn) {
-        jQuery('#' + btn).prop('disabled', true);
+        jQuery('#' + btn).prop('disabled', true).addClass('disabled');
     }
     function btnEnable(btn) {
-        jQuery('#' + btn).prop('disabled', false);
+        jQuery('#' + btn).prop('disabled', false).removeClass('disabled');
     }
 
     /*
@@ -82,9 +100,11 @@ var YarmUi = (function () {
     }
 
     function recordingStopped(url, name) {
-        jQuery('#player audio').attr({src: url, controls: true});//apply attributes to <audio> tag
-        jQuery('#player .name').text(name);                      //display the recording name
-        jQuery('#player a').attr({href: url, download: name});   //attach url to 'save' link
+        //attach the new media URL to link that supports the 'save' button
+        jQuery('#media-save' ).attr({href: url, download: name});   
+
+        //load the media into the player
+        player.setMedia({url:url, name:name});
     }
 
     /*
@@ -113,7 +133,7 @@ var YarmUi = (function () {
         btnState('stop');
     });
     jQuery("#save").click(function (e) {
-        document.getElementById('player-save').click();
+        document.getElementById('media-save').click();
         btnState('stop');
     });
     jQuery("#upload").click(function (e) {
@@ -149,6 +169,7 @@ var YarmUi = (function () {
         xhr.send(fd);
 
         btnState('stop');
+        
     });
 
     function noteUploadResult(successFlg, msg) {
@@ -160,30 +181,17 @@ var YarmUi = (function () {
     }
 
     //prevent sticky button outline when clicking buttons
-    jQuery("#btns .button").click(function (e) {
+    jQuery("#recorder .button").click(function (e) {
         this.blur();
     });
 
-    /*
-     * specify the initial state
-     */
+
     btnState('enable');
 
     /*
      *  expose public methods 
      */
     return {
-        /*
-         * configure the module 
-         * @param arguments[0]: an object containing optional configuration parameters
-         */
-        setConfig: function () {
-            var args = arguments[0] || {};
-            for (var arg in args) {
-                config[arg] = args[arg];
-            }
-        },
-
         /*
          * logging utility: print to console and screen 
          * @param msg: the message to be displayed
@@ -193,5 +201,6 @@ var YarmUi = (function () {
             console.log(msg);
         }
     };
-})();
+};
+
 
