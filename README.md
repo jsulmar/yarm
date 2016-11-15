@@ -5,7 +5,9 @@
 ---
 
 ##Summary
-* provides a basic voice recorder with the ability to playback, save (to workstation), and upload (to host) an .ogg file.
+* provides a basic voice recorder with the ability to playback, save (to workstation), and upload (to host) an .ogg file.  
+* Playback options include [html5 audio](http://www.w3schools.com/html/html5_audio.asp), or [jPlayer](http://jplayer.org/).
+* [demo](http://bit.ly/2dPxlMj)
 
 ##Requirements
 * desktop browser Chrome v49+ or Firefox v30+
