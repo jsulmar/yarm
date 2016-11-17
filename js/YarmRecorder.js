@@ -18,6 +18,28 @@ var YarmRecorder = function (stream, media, stoppedCallback) {
     this.url = '';    //url reference to the recording
     this.name = '';   //unique name assigned to the recording
 
+
+    //find a supported media type on this browser
+    this.supportedMedia= function(){
+        var mediaTypes= [
+            "audio/ogg",    //supported by Firefox
+            "audio/mp3",
+            "audio/webm",   //supported by Chrome
+            "audio/wav"
+        ];
+
+        var supported="none";
+        mediaTypes.some(function(item){
+            if (MediaRecorder.isTypeSupported(item)){
+                supported=item;
+                return true;    //break out of loop
+            }
+        });
+        return supported;
+    };
+
+
+
     /*
      * create the recorder
      */
@@ -62,20 +84,29 @@ var YarmRecorder = function (stream, media, stoppedCallback) {
         this.blob = null;
         this.url = this.name = '';
         this.mediaRec && this.mediaRec.start();
-    }
+    };
 
     /*
      * stop recording
      */
     this.stop = function () {
         this.mediaRec && this.mediaRec.stop();
-    }
+    };
 
     /*
      * blob getter
      */
     this.getBlob = function () {
         return this.blob;
-    }
+    };
+    
+    /*
+     * getter for current recording name
+     */
+    this.getName = function () {
+        return this.name;
+    };
+    
+    
 };
 

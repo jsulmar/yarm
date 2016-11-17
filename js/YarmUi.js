@@ -50,10 +50,10 @@ var YarmUi = function () {
      * button state helper methods
      */
     function btnDisable(btn) {
-        jQuery('#' + btn).prop('disabled', true).addClass('disabled');
+        $('#' + btn).prop('disabled', true).addClass('disabled');
     }
     function btnEnable(btn) {
-        jQuery('#' + btn).prop('disabled', false).removeClass('disabled');
+        $('#' + btn).prop('disabled', false).removeClass('disabled');
     }
 
     /*
@@ -62,30 +62,30 @@ var YarmUi = function () {
     function btnState(goToState) {
         switch (goToState) {
             case 'enable':
-                jQuery('#enable').css('display', 'inline');
+                $('#enable').css('display', 'inline');
                 btnEnable("enable");
-                jQuery('#player').css('display', 'none');
+                $('#player').css('display', 'none');
                 break;
             case 'record':
                 btnDisable("record");
                 btnDisable("save");
                 btnDisable("upload");
                 btnEnable("stop");
-                jQuery('#player').css('display', 'none');
+                $('#player').css('display', 'none');
                 break;
             case 'stop':
                 btnDisable("stop");
                 btnEnable("record");
                 btnEnable("save");
                 btnEnable("upload");
-                jQuery('#player').css('display', 'block');
+                $('#player').css('display', 'block');
                 break;
             case 'ready':
             case 'default':
-                jQuery('#enable').css('display', 'none');
-                jQuery('#record, #stop, #save, #upload').css('display', 'inline');
+                $('#enable').css('display', 'none');
+                $('#record, #stop, #save, #upload').css('display', 'inline');
                 btnEnable("record");
-                jQuery('#player').css('display', 'none');
+                $('#player').css('display', 'none');
                 break;
         }
     }
@@ -101,7 +101,7 @@ var YarmUi = function () {
 
     function recordingStopped(url, name) {
         //attach the new media URL to link that supports the 'save' button
-        jQuery('#media-save' ).attr({href: url, download: name});   
+        $('#media-save' ).attr({href: url, download: name});   
 
         //load the media into the player
         player.setMedia({url:url, name:name});
@@ -110,7 +110,7 @@ var YarmUi = function () {
     /*
      * button handlers
      */
-    jQuery("#enable").click(function (e) {
+    $("#enable").click(function (e) {
         /*
          * YarmLocalMedia will either return a steam or undefined.
          * In the latter case, it will create a stream and invoke its callback
@@ -124,22 +124,22 @@ var YarmUi = function () {
         }));
 
     });
-    jQuery("#record").click(function (e) {
+    $("#record").click(function (e) {
         yrec.start();
         btnState('record');
     });
-    jQuery("#stop").click(function (e) {
+    $("#stop").click(function (e) {
         yrec.stop();
         btnState('stop');
     });
-    jQuery("#save").click(function (e) {
+    $("#save").click(function (e) {
         document.getElementById('media-save').click();
         btnState('stop');
     });
-    jQuery("#upload").click(function (e) {
+    $("#upload").click(function (e) {
 
         var fd = new FormData();
-        fd.append("upload_file[filename]", yrec.getBlob(), jQuery('#player .name').text());
+        fd.append("upload_file[filename]", yrec.getBlob(), yrec.getName());
 
         var xhr = new XMLHttpRequest();
         xhr.open("POST", config.uploadHandlerUrl, true);
@@ -150,7 +150,7 @@ var YarmUi = function () {
                     break;
                 case 200:
                     if (this.readyState == 4) {
-                        var response = jQuery.parseJSON(this.responseText);
+                        var response = $.parseJSON(this.responseText);
                         if (!response) {
                             noteUploadResult(false, "AJAX null response");
                         } else if (response.status != 'success') {
@@ -181,7 +181,7 @@ var YarmUi = function () {
     }
 
     //prevent sticky button outline when clicking buttons
-    jQuery("#recorder .button").click(function (e) {
+    $("#recorder .button").click(function (e) {
         this.blur();
     });
 
