@@ -14,14 +14,24 @@
  *  record  recording
  *  stop    stopped recording is complete
  *  
+ * DOM:
+ *  appliances (e.g. recorder, player) alone are enclosed in a container
+ *  buttons alone for each appliance are enclosed in a container
+ *  
+ *  Recorder Buttons:
+ *  approval, record, stop, save, upload
  */
 
 
 var YarmUi = function () {
+    var that=this;
+    
     var DEFAULTS = {
         media: {type: 'audio/ogg', ext: '.ogg'},
         uploadHandlerUrl: window.location.href + '/php/catch.php',
-        playerType: "YarmHtmlPlayer"
+        playerType: "YarmHtmlPlayer",
+        applianceContainer: "#appliances",
+        recorderButtonContainer:"#recorder .buttons"
     };
 
     /*
@@ -41,64 +51,24 @@ var YarmUi = function () {
     * instantiate a player of the specified type
     */
     var player= new YarmPlayer('#player', new window[config.playerType]() );
-
     var yrec;   //the recorder object, constructed by 'enable' handler
     var stream; //the MediaStream to be used for the recorder
 
 
     /*
-     * button state helper methods
+     * instantiate the recorder
      */
-    function btnDisable(btn) {
-        $('#' + btn).prop('disabled', true).addClass('disabled');
-    }
-    function btnEnable(btn) {
-        $('#' + btn).prop('disabled', false).removeClass('disabled');
-    }
-
-    /*
-     * state transition manager
-     */
-    function btnState(goToState) {
-        switch (goToState) {
-            case 'enable':
-                $('#enable').css('display', 'inline');
-                btnEnable("enable");
-                $('#player').css('display', 'none');
-                break;
-            case 'record':
-                btnDisable("record");
-                btnDisable("save");
-                btnDisable("upload");
-                btnEnable("stop");
-                $('#player').css('display', 'none');
-                break;
-            case 'stop':
-                btnDisable("stop");
-                btnEnable("record");
-                btnEnable("save");
-                btnEnable("upload");
-                $('#player').css('display', 'block');
-                break;
-            case 'ready':
-            case 'default':
-                $('#enable').css('display', 'none');
-                $('#record, #stop, #save, #upload').css('display', 'inline');
-                btnEnable("record");
-                $('#player').css('display', 'none');
-                break;
-        }
-    }
-
-
     function createRecorder(strm) {
         if (strm !== undefined) {
             stream = strm;
             yrec = new YarmRecorder(strm, config.media, recordingStopped);
-            btnState('ready');
+            displayState.set('ready');
         }
     }
 
+    /*
+     * note that a recording session has stopped
+     */
     function recordingStopped(url, name) {
         //attach the new media URL to link that supports the 'save' button
         $('#media-save' ).attr({href: url, download: name});   
@@ -107,36 +77,84 @@ var YarmUi = function () {
         player.setMedia({url:url, name:name});
     }
 
+
+    /*
+     * 
+     * manage the display (states of appliances and buttons)
+     */
+    var displayState={
+        //request permission to use the microphone/recorder
+        enable: {
+            appliances: '#recorder', 
+            recBtnsShow:'.approval', 
+            recBtnsEn:  '.approval'},
+        //recorder is ready
+        ready:  {
+            appliances: '#recorder', 
+            recBtnsShow:'.record, .stop, .save, .upload', 
+            recBtnsEn:  '.record'},
+        //recording is in progress
+        record: {
+            appliances: '#recorder', 
+            recBtnsShow:'.record, .stop, .save, .upload', 
+            recBtnsEn:  '.stop'},
+        //recording is completed
+        stop:   {
+            appliances: '#recorder, #player',  //show both appliances
+            recBtnsShow:'.record, .stop, .save, .upload', 
+            recBtnsEn:  '.record, .save, .upload'},
+
+        //make visible  only the specified members within the specified group
+        xshow: function(grp, members){
+                $(grp).children().filter(members).show();
+                $(grp).children().filter(':not(' + members + ')').hide();
+        },
+
+        //exclusive enable:-- enable only the specified members within the specified group
+        xen: function(grp, members){
+                $(grp).children().filter(members).prop('disabled', false).removeClass('disabled');
+                $(grp).children().filter(':not(' + members + ')').prop('disabled', true).addClass('disabled');	
+        },
+
+        set: function(state){
+            this.xshow(config.applianceContainer, this[state].appliances );
+            this.xshow(config.recorderButtonContainer, this[state].recBtnsShow);
+            this.xen(config.recorderButtonContainer, this[state].recBtnsEn);
+        }
+    }
+
+
+
     /*
      * button handlers
      */
-    $("#enable").click(function (e) {
+    $(".approval").click(function (e) {
         /*
          * YarmLocalMedia will either return a steam or undefined.
          * In the latter case, it will create a stream and invoke its callback
          * once the stream is created.
          * 
          * The following invokes createRecorder once if the stream exists, or
-         * twice if the stream is created.
+         * twice if the stream must be created.
          */
         createRecorder(YarmLocalMedia.getAudioStream(function (stream) {
             createRecorder(stream);
         }));
 
     });
-    $("#record").click(function (e) {
+    $(".record").click(function (e) {
         yrec.start();
-        btnState('record');
+        displayState.set('record');
     });
-    $("#stop").click(function (e) {
+    $(".stop").click(function (e) {
         yrec.stop();
-        btnState('stop');
+        displayState.set('stop');
     });
-    $("#save").click(function (e) {
+    $(".save").click(function (e) {
         document.getElementById('media-save').click();
-        btnState('stop');
+        displayState.set('stop');
     });
-    $("#upload").click(function (e) {
+    $(".upload").click(function (e) {
 
         var fd = new FormData();
         fd.append("upload_file[filename]", yrec.getBlob(), yrec.getName());
@@ -168,7 +186,7 @@ var YarmUi = function () {
         };
         xhr.send(fd);
 
-        btnState('stop');
+        displayState.set('stop');
         
     });
 
@@ -186,21 +204,16 @@ var YarmUi = function () {
     });
 
 
-    btnState('enable');
+    displayState.set('enable');
+
 
     /*
-     *  expose public methods 
-     */
-    return {
-        /*
-         * logging utility: print to console and screen 
-         * @param msg: the message to be displayed
-         */
-        _log: function (msg) {
-            log.innerHTML += "\n" + msg;
-            console.log(msg);
-        }
+     * logging utility: print to console and screen 
+     * @param msg: the message to be displayed
+    */
+    this.log=function (msg) {
+        log.innerHTML += "\n" + msg;
+        console.log(msg);
     };
 };
-
 
