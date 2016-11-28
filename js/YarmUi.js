@@ -35,6 +35,16 @@ var YarmUi = function () {
     };
 
     /*
+     * logging utility: print to console and screen 
+     * @param msg: the message to be displayed
+     */
+    function log(msg) {
+        window.log.innerHTML += "\n" + msg;
+        return console.log(msg);
+    }
+
+
+    /*
      * initialize configuration to default values
      */
     var config = DEFAULTS;
@@ -191,9 +201,8 @@ var YarmUi = function () {
     });
 
     function noteUploadResult(successFlg, msg) {
-        if (successFlg) {
-            console.log(msg);
-        } else {
+        log(msg);
+        if (!successFlg) {
             console.error(msg);
         }
     }
@@ -205,15 +214,6 @@ var YarmUi = function () {
 
 
     displayState.set('enable');
-
-
-    /*
-     * logging utility: print to console and screen 
-     * @param msg: the message to be displayed
-    */
-    this.log=function (msg) {
-        log.innerHTML += "\n" + msg;
-        console.log(msg);
-    };
+    
 };
 

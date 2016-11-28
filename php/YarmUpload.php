@@ -14,14 +14,17 @@
 class YarmUpload {
 
 //NOTE: be sure php.ini sets upload_max_filesize appropriately.
-    static function fileCatch($enableOutput=true) {
+    static function fileCatch($enableOutput=true, $save_folder='') {
         $err = '';
 
         $request = $_REQUEST;
         // TODO: authenticate request
 
-        $save_folder = realpath(__DIR__ . '/../uploads');
-
+        //use default folder if non provided in argument
+        if (empty($save_folder)){
+            $save_folder = realpath(__DIR__ . '/../uploads');
+        }
+        
         $key = 'filename';
 
         $err1 = (!array_key_exists("upload_file", $_FILES) || $_FILES["upload_file"]["error"][$key] );
@@ -59,15 +62,16 @@ class YarmUpload {
             }
         }
         if (!$err) {
-            $response = array(
-                'status' => 'success'
-            );
+            $response = [
+                'status' => 'success',
+                'name' => $upload_name,
+            ];
         } else {
             //error reporting
-            $response = array(
+            $response = [
                 'status' => 'fail',
                 'err' => $err,
-            );
+            ];
         }
         $json = json_encode($response);
 
