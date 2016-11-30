@@ -144,7 +144,7 @@ var YarmJPlayer = function() {
                 //OK, jPlayer is ready
                 $("#jquery_jplayer_1").jPlayer({
                         ready: function (event) {
-                    console.log(event.type);    //expect "jPlayer_ready"
+                            //console.log(event.type);    //expect "jPlayer_ready"
                         },
                         swfPath: "../../dist/jplayer",
                         supplied: "oga",
