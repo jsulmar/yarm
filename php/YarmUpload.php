@@ -62,6 +62,10 @@ class YarmUpload {
     
     //move the temporary file to destination folder
     static function save_file($tmp_name, $save_folder, $filename){
+        if(!is_dir($save_folder)){
+            //Directory does not exist, create it.
+            mkdir($save_folder, 0755, true);
+        }
         return move_uploaded_file($tmp_name, "$save_folder/$filename");
     }
 
