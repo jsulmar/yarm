@@ -17,6 +17,11 @@
     margin-top:50px;    
 }
 
+/* initially hide all appliances */
+#appliances>div {
+    display:none;
+}
+
 /*******************************
  * recorder elements
  */
@@ -38,28 +43,25 @@
 
 
 /* initially hide the players */
-#player{
+#playback{
     display:none;
 }
 
-#player {
+#playback {
     color: #666;
     border: 1px solid #009be3;
     background-color: #eee;width:420px;
-}
-
-#player{
     margin-top:30px;
     margin-left:15px;
     width:420px;
     text-align:center;
 }
 
-#player audio{
+#playback audio{
     margin-top:20px;
 }
 
-#player .name{
+#playback .name{
     display:block;
     margin-bottom:10px;
 }

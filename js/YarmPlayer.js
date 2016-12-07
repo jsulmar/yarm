@@ -11,42 +11,37 @@
 /*
  * the context YarmPlayer manages the specific player type specified in the constructor
  */
-var YarmPlayer = function(id, player) {
-    this.id=id;
+var YarmPlayer = function (id, player) {
+    this.id = id;                   //the DOM selector
     this.player = player;
-    $(id).html(this.player.getTemplate());
-    this.player.initialize();
-
-    
+    $('#' + id).html(this.getTemplate());
+    this.initialize();
 };
-
 
 /*
  * all player types must provide these prototype methods
  */
 YarmPlayer.prototype = {
- 
     /*
-     * 
      * return the HTML required by the player to be dynamically placed into the DOM
      */
-    getTemplate: function(){
-        return this.player.getTemplate();
+    getTemplate: function () {
+        return this.player.getTemplate(this.id);
     },
-    
+
     /*
      * 
      * perform the one-time initialization required for the player
      */
-    initialize: function(){
+    initialize: function () {
         this.player.initialize(this.id);
     },
-    
+
     /*
      * specify the media to be played
      * Note that all player controls are self contained
      */
-    setMedia: function(media){
+    setMedia: function (media) {
         this.player.setMedia(this.id, media);
     }
 };
@@ -58,24 +53,24 @@ YarmPlayer.prototype = {
  * plugins.  However it is only compatible with modern Chrome and Firefox
  * browsers.
  */
-var YarmHtmlPlayer = function() {
-    this.template=
-    `
+var YarmHtmlPlayer = function () {
+    this.template =
+            `
         <audio ></audio>  
         <span class="name"></span> 
     `;
 
-    this.getTemplate= function(){
+    this.getTemplate = function () {
         return(this.template);
     };
-    
-    this.initialize= function(){
+
+    this.initialize = function () {
         //none needed
     };
-    
-    this.setMedia= function(id, media){
-        jQuery(id + ' audio').attr({src: media.url, controls: true});//apply attributes to <audio> tag
-        jQuery(id + ' .name').text(media.name);                      //display the recording name
+
+    this.setMedia = function (id, media) {
+        jQuery('#' + id + ' audio').attr({src: media.url, controls: true});//apply attributes to <audio> tag
+        jQuery('#' + id + ' .name').text(media.name);                      //display the recording name
     };
 };
 
@@ -85,11 +80,11 @@ var YarmHtmlPlayer = function() {
  * YarmJPlayer requires the jPlayer library and provides better cross-browser
  * compatibility and media format support.
  */
-var YarmJPlayer = function() {
+var YarmJPlayer = function () {
     this.media = {name: null, url: null};
 
-    this.template=
-    `
+    this.template =
+            `
         <div id="jquery_jplayer_1" class="jp-jplayer"></div>
         <div id="jp_container_1" class="jp-audio" role="application" aria-label="media player">
                 <div class="jp-type-single">
@@ -128,46 +123,54 @@ var YarmJPlayer = function() {
                 </div>
         </div>
     `;
-    this.getTemplate= function(){
-        return(this.template);
+    this.getTemplate = function (id) {
+        //annotate template with the specified id suffix
+        var t = this.template.replace('jquery_jplayer_1', 'jquery_jplayer_' + id);
+        t = t.replace('jp_container_1', 'jp_container_' + id);
+        return(t);
     };
-   
 
-    this.initialize= function(id, media){
+
+    this.initialize = function (id) {
         /*
          * The jPlayer plugin does not expect the html object to be dynamically
          * created, and there is an indeterminate delay after creating the template 
          * before the plugin is ready.  Poll for 'ready' before initializing.
-        */
-        var interval= setInterval(function(){
-            if ($("#jquery_jplayer_1").jPlayer){
+         */
+        var selector = "#jquery_jplayer_" + id;
+        var interval = setInterval(function () {
+            if ($(selector).jPlayer) {
                 //OK, jPlayer is ready
-                $("#jquery_jplayer_1").jPlayer({
-                        ready: function (event) {
-                            //console.log(event.type);    //expect "jPlayer_ready"
-                        },
-                        swfPath: "../../dist/jplayer",
-                        supplied: "oga",
-                        wmode: "window",
-                        useStateClassSkin: true,
-                        autoBlur: false,
-                        smoothPlayBar: true,
-                        keyEnabled: true,
-                        remainingDuration: true,
-                        toggleDuration: true
+                $(selector).jPlayer({
+                    ready: function (event) {
+                        //console.log(event.type);    //expect "jPlayer_ready"
+                    },
+                    play: function () { // To avoid multiple jPlayers playing together.
+                        $(this).jPlayer("pauseOthers");
+                    },
+                    swfPath: "../../dist/jplayer",
+                    supplied: "oga",
+                    cssSelectorAncestor: "#jp_container_" + id,
+                    wmode: "window",
+                    useStateClassSkin: true,
+                    autoBlur: false,
+                    smoothPlayBar: true,
+                    keyEnabled: true,
+                    remainingDuration: true,
+                    toggleDuration: true
                 });
                 clearInterval(interval);
             }
         }, 500);
-    
+
     };
-    
-    this.setMedia = function(id, media){
-        $("#jquery_jplayer_1").jPlayer("setMedia", {
-                title: media.name,
-                oga: media.url
+
+    this.setMedia = function (id, media) {
+        $("#jquery_jplayer_" + id).jPlayer("setMedia", {
+            title: media.name,
+            oga: media.url
         });
     };
-    
+
 };
 

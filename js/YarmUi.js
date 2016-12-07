@@ -60,7 +60,7 @@ var YarmUi = function () {
     /*
     * instantiate a player of the specified type
     */
-    var player= new YarmPlayer('#player', new window[config.playerType]() );
+    var player= new YarmPlayer('playback', new window[config.playerType]() );
     var yrec;   //the recorder object, constructed by 'enable' handler
     var stream; //the MediaStream to be used for the recorder
 
@@ -110,7 +110,7 @@ var YarmUi = function () {
             recBtnsEn:  '.stop'},
         //recording is completed
         stop:   {
-            appliances: '#recorder, #player',  //show both appliances
+            appliances: '#recorder, #playback',  //show both appliances
             recBtnsShow:'.record, .stop, .save, .upload', 
             recBtnsEn:  '.record, .save, .upload'},
 
@@ -214,6 +214,7 @@ var YarmUi = function () {
 
 
     displayState.set('enable');
+    
     
 };
 
