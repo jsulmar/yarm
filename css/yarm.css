@@ -45,9 +45,13 @@
 /* initially hide the players */
 .playback{
     display:none;
+    margin-top:30px;
+    margin-left:15px;
 }
 
-.playback {
+
+
+.YarmHtmlPlayer {
     color: #666;
     border: 1px solid #009be3;
     background-color: #eee;width:420px;
@@ -57,11 +61,11 @@
     text-align:center;
 }
 
-.playback audio{
+.YarmHtmlPlayer audio{
     margin-top:20px;
 }
 
-.playback .name{
+.YarmHtmlPlayer .name{
     display:block;
     margin-bottom:10px;
 }

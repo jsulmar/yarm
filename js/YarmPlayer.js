@@ -11,10 +11,11 @@
 /*
  * the context YarmPlayer manages the specific player type specified in the constructor
  */
-var YarmPlayer = function (selector, player) {
+var YarmPlayer = function (selector, player, media) {
     YarmPlayer.id++;
+    this.media=media;
     this.player = new window[player]();
-    $(selector).html(this.getTemplate());
+    $(selector).html(this.getTemplate()).addClass(player);
     this.initialize();
 };
 
@@ -37,7 +38,7 @@ YarmPlayer.prototype = {
      * perform the one-time initialization required for the player
      */
     initialize: function () {
-        this.player.initialize(YarmPlayer.id);
+        this.player.initialize(YarmPlayer.id, this.media);
     },
 
     /*
