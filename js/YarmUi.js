@@ -31,7 +31,8 @@ var YarmUi = function () {
         uploadHandlerUrl: window.location.href + '/php/catch.php',
         playerType: "YarmHtmlPlayer",
         applianceContainer: "#appliances",
-        recorderButtonContainer:"#recorder .buttons"
+        recorderControls: "#appliances .recorder .controls",
+        playbackSelector: "#appliances .playback"
     };
 
     /*
@@ -60,7 +61,7 @@ var YarmUi = function () {
     /*
     * instantiate a player of the specified type
     */
-    var player= new YarmPlayer('playback', new window[config.playerType]() );
+    var player= new YarmPlayer('.playback', config.playerType);
     var yrec;   //the recorder object, constructed by 'enable' handler
     var stream; //the MediaStream to be used for the recorder
 
@@ -84,7 +85,7 @@ var YarmUi = function () {
         $('#media-save' ).attr({href: url, download: name});   
 
         //load the media into the player
-        player.setMedia({url:url, name:name});
+        player.setMedia({url:url, name:name, autoplay:false});
     }
 
 
@@ -95,22 +96,22 @@ var YarmUi = function () {
     var displayState={
         //request permission to use the microphone/recorder
         enable: {
-            appliances: '#recorder', 
+            playback: false, 
             recBtnsShow:'.approval', 
             recBtnsEn:  '.approval'},
         //recorder is ready
         ready:  {
-            appliances: '#recorder', 
+            playback: false, 
             recBtnsShow:'.record, .stop, .save, .upload', 
             recBtnsEn:  '.record'},
         //recording is in progress
         record: {
-            appliances: '#recorder', 
+            playback: false, 
             recBtnsShow:'.record, .stop, .save, .upload', 
             recBtnsEn:  '.stop'},
         //recording is completed
         stop:   {
-            appliances: '#recorder, #playback',  //show both appliances
+            playback: true, 
             recBtnsShow:'.record, .stop, .save, .upload', 
             recBtnsEn:  '.record, .save, .upload'},
 
@@ -127,9 +128,9 @@ var YarmUi = function () {
         },
 
         set: function(state){
-            this.xshow(config.applianceContainer, this[state].appliances );
-            this.xshow(config.recorderButtonContainer, this[state].recBtnsShow);
-            this.xen(config.recorderButtonContainer, this[state].recBtnsEn);
+            this[state].playback ? $(config.playbackSelector).show() : $(config.playbackSelector).hide(); 
+            this.xshow(config.recorderControls, this[state].recBtnsShow);
+            this.xen(config.recorderControls, this[state].recBtnsEn);
         }
     }
 
@@ -208,12 +209,13 @@ var YarmUi = function () {
     }
 
     //prevent sticky button outline when clicking buttons
-    $("#recorder .button").click(function (e) {
+    $(".recorder .button").click(function (e) {
         this.blur();
     });
 
 
     displayState.set('enable');
+    $(".recorder").show();
     
     
 };

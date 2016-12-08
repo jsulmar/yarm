@@ -11,12 +11,15 @@
 /*
  * the context YarmPlayer manages the specific player type specified in the constructor
  */
-var YarmPlayer = function (id, player) {
-    this.id = id;                   //the DOM selector
-    this.player = player;
-    $('#' + id).html(this.getTemplate());
+var YarmPlayer = function (selector, player) {
+    YarmPlayer.id++;
+    this.player = new window[player]();
+    $(selector).html(this.getTemplate());
     this.initialize();
 };
+
+// Static variable, enables instantiation of multiple players
+YarmPlayer.id = 0;
 
 /*
  * all player types must provide these prototype methods
@@ -26,7 +29,7 @@ YarmPlayer.prototype = {
      * return the HTML required by the player to be dynamically placed into the DOM
      */
     getTemplate: function () {
-        return this.player.getTemplate(this.id);
+        return this.player.getTemplate(YarmPlayer.id);
     },
 
     /*
@@ -34,7 +37,7 @@ YarmPlayer.prototype = {
      * perform the one-time initialization required for the player
      */
     initialize: function () {
-        this.player.initialize(this.id);
+        this.player.initialize(YarmPlayer.id);
     },
 
     /*
@@ -42,7 +45,7 @@ YarmPlayer.prototype = {
      * Note that all player controls are self contained
      */
     setMedia: function (media) {
-        this.player.setMedia(this.id, media);
+        this.player.setMedia(YarmPlayer.id, media);
     }
 };
 
@@ -56,25 +59,33 @@ YarmPlayer.prototype = {
 var YarmHtmlPlayer = function () {
     this.template =
             `
-        <audio ></audio>  
-        <span class="name"></span> 
+        <div id="html_player_1">
+            <audio ></audio>  
+            <span class="name"></span> 
+        </div>
     `;
 
-    this.getTemplate = function () {
-        return(this.template);
+    this.getTemplate = function (id) {
+        //annotate template with the specified id suffix
+        var t = this.template.replace('html_player_1', 'html_player_' + id);
+        return(t);
     };
 
-    this.initialize = function () {
-        //none needed
+    this.initialize = function (id, media) {
+        media && that.setMedia(id, media);
     };
 
     this.setMedia = function (id, media) {
-        jQuery('#' + id + ' audio').attr({src: media.url, controls: true});//apply attributes to <audio> tag
-        jQuery('#' + id + ' .name').text(media.name);                      //display the recording name
+        jQuery('#html_player_' + id + ' audio').attr({
+            src: media.url, 
+            controls: true,
+            autoplay: ('autoplay' in media) && media.autoplay
+        });//apply attributes to <audio> tag
+        jQuery('#html_player_' + id + ' .name').text(media.name);   
     };
 };
 
-
+        
 /*
  * 
  * YarmJPlayer requires the jPlayer library and provides better cross-browser
@@ -131,7 +142,8 @@ var YarmJPlayer = function () {
     };
 
 
-    this.initialize = function (id) {
+    this.initialize = function (id, media) {
+        var that=this;
         /*
          * The jPlayer plugin does not expect the html object to be dynamically
          * created, and there is an indeterminate delay after creating the template 
@@ -143,7 +155,7 @@ var YarmJPlayer = function () {
                 //OK, jPlayer is ready
                 $(selector).jPlayer({
                     ready: function (event) {
-                        //console.log(event.type);    //expect "jPlayer_ready"
+                        media && that.setMedia(id, media);
                     },
                     play: function () { // To avoid multiple jPlayers playing together.
                         $(this).jPlayer("pauseOthers");
@@ -170,6 +182,9 @@ var YarmJPlayer = function () {
             title: media.name,
             oga: media.url
         });
+        if (('autoplay' in media) && media.autoplay){
+            $("#jquery_jplayer_" + id).jPlayer("play");
+        }
     };
 
 };

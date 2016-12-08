@@ -25,13 +25,13 @@
 /*******************************
  * recorder elements
  */
-#recorder .button{
+.recorder .button{
     display:none;
     margin-top:30px;
 }
 
 /* visually disables the button but does not stop click events */
-#recorder .button.disabled {
+.recorder .button.disabled {
     opacity: 0.45; 
     cursor: not-allowed;
 }
@@ -43,11 +43,11 @@
 
 
 /* initially hide the players */
-#playback{
+.playback{
     display:none;
 }
 
-#playback {
+.playback {
     color: #666;
     border: 1px solid #009be3;
     background-color: #eee;width:420px;
@@ -57,11 +57,11 @@
     text-align:center;
 }
 
-#playback audio{
+.playback audio{
     margin-top:20px;
 }
 
-#playback .name{
+.playback .name{
     display:block;
     margin-bottom:10px;
 }
