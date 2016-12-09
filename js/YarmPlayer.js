@@ -12,7 +12,8 @@
  * the context YarmPlayer manages the specific player type specified in the constructor
  */
 var YarmPlayer = function (selector, player, media) {
-    YarmPlayer.id++;
+    YarmPlayer.id++;            //static variable incremented with each instantiation
+    this.id= YarmPlayer.id;     //assign unique id to instance
     this.media=media;
     this.player = new window[player]();
     $(selector).html(this.getTemplate()).addClass(player);
@@ -30,7 +31,7 @@ YarmPlayer.prototype = {
      * return the HTML required by the player to be dynamically placed into the DOM
      */
     getTemplate: function () {
-        return this.player.getTemplate(YarmPlayer.id);
+        return this.player.getTemplate(this.id);
     },
 
     /*
@@ -38,7 +39,7 @@ YarmPlayer.prototype = {
      * perform the one-time initialization required for the player
      */
     initialize: function () {
-        this.player.initialize(YarmPlayer.id, this.media);
+        this.player.initialize(this.id, this.media);
     },
 
     /*
@@ -46,7 +47,15 @@ YarmPlayer.prototype = {
      * Note that all player controls are self contained
      */
     setMedia: function (media) {
-        this.player.setMedia(YarmPlayer.id, media);
+        this.player.setMedia(this.id, media);
+    },
+    
+    
+    /*
+     * immediately stop playing
+     */
+    stop: function(){
+        this.player.stop(this.id);
     }
 };
 
@@ -84,6 +93,10 @@ var YarmHtmlPlayer = function () {
         });//apply attributes to <audio> tag
         jQuery('#html_player_' + id + ' .name').text(media.name);   
     };
+    
+    this.stop= function(id){
+        //TODO: implement YarmHtmlPlayer.stop
+    }
 };
 
         
@@ -97,8 +110,8 @@ var YarmJPlayer = function () {
 
     this.template =
             `
-        <div id="jquery_jplayer_1" class="jp-jplayer"></div>
-        <div id="jp_container_1" class="jp-audio" role="application" aria-label="media player">
+        <div id="jquery_jplayer_?" class="jp-jplayer"></div>
+        <div id="jp_container_?" class="jp-audio" role="application" aria-label="media player">
                 <div class="jp-type-single">
                         <div class="jp-gui jp-interface">
                                 <div class="jp-controls">
@@ -137,8 +150,8 @@ var YarmJPlayer = function () {
     `;
     this.getTemplate = function (id) {
         //annotate template with the specified id suffix
-        var t = this.template.replace('jquery_jplayer_1', 'jquery_jplayer_' + id);
-        t = t.replace('jp_container_1', 'jp_container_' + id);
+        var t = this.template.replace('jquery_jplayer_?', 'jquery_jplayer_' + id);
+        t = t.replace('jp_container_?', 'jp_container_' + id);
         return(t);
     };
 
@@ -186,6 +199,11 @@ var YarmJPlayer = function () {
         if (('autoplay' in media) && media.autoplay){
             $("#jquery_jplayer_" + id).jPlayer("play");
         }
+    };
+
+    this.stop= function(id){
+        var selector="#jquery_jplayer_" + id;
+        $(selector).jPlayer("stop");
     };
 
 };
