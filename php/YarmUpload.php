@@ -20,6 +20,7 @@
 class YarmUpload {
     static function fileCatch($enableOutput=true, $save_folder='') {
         $err = '';
+        $response= [];
 
         //use default folder if non provided in argument
         if (empty($save_folder)){
@@ -41,14 +42,20 @@ class YarmUpload {
         }
         if (!$err) {
             //SAVE FILE
-            if (!static::save_file($tmp_name, $save_folder, $upload_name)) {
+            //Note that $response is passed by reference so that it can be annotated
+            if (!static::save_file($tmp_name, $save_folder, $upload_name, $response)) {
                 $err = "failed to move $tmp_name to $save_folder/$upload_name";
             }
         }
-        $response= $err
+        
+        //append the status to the results array
+        $response= array_merge ( 
+            $err
             ? ['status' => 'fail', 'err' => $err]
-            : ['status' => 'success', 'name' => $upload_name]
-        ;
+            : ['status' => 'success', 'name' => $upload_name],
+
+            $response
+        );
 
         /*
          * generate output if enabled
@@ -61,11 +68,12 @@ class YarmUpload {
     }
     
     //move the temporary file to destination folder
-    static function save_file($tmp_name, $save_folder, $filename){
+    static function save_file($tmp_name, $save_folder, $filename, &$response){
         if(!is_dir($save_folder)){
             //Directory does not exist, create it.
             mkdir($save_folder, 0755, true);
         }
+        $response['url']= "$filename";
         return move_uploaded_file($tmp_name, "$save_folder/$filename");
     }
 

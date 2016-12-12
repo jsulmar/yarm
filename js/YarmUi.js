@@ -27,12 +27,23 @@ var YarmUi = function () {
     var that=this;
     
     var DEFAULTS = {
+        //the type of media to be recorded
         media: {type: 'audio/ogg', ext: '.ogg'},
+        
+        //the script url to be invoked for uploading the recording
         uploadHandlerUrl: window.location.href + '/php/catch.php',
+        
+        //select the type of player to be used for reviewing the recording
         playerType: "YarmHtmlPlayer",
+        
+        //The DOM must provide a container with a recorder child.
+        //The recorder contains controls with buttons, and a playback element.
         applianceContainer: "#appliances",
         recorderControls: "#appliances .recorder .controls",
-        playbackSelector: "#appliances .playback"
+        playbackSelector: "#appliances .recorder .playback",
+        
+        //An optional callback can be invoked upon successful upload of a recording.
+        uploadCallback:     null
     };
 
     /*
@@ -114,6 +125,16 @@ var YarmUi = function () {
             playback: true, 
             recBtnsShow:'.record, .stop, .save, .upload', 
             recBtnsEn:  '.record, .save, .upload'},
+        //recording is completed
+        uploading:   {
+            playback: false, 
+            recBtnsShow:'.record, .stop, .save, .upload', 
+            recBtnsEn:  ''},
+        //upload is complete
+        uploaded:   {
+            playback: false, 
+            recBtnsShow:'.record, .stop, .save, .upload', 
+            recBtnsEn:  ''},
 
         //make visible  only the specified members within the specified group
         xshow: function(grp, members){
@@ -127,7 +148,10 @@ var YarmUi = function () {
                 $(grp).children().filter(':not(' + members + ')').prop('disabled', true).addClass('disabled');	
         },
 
-        set: function(state){
+        set: function(state, progress){
+            if(progress){
+                $(config.applianceContainer + ' .recorder .progress').html(progress);
+            }
             this[state].playback ? $(config.playbackSelector).show() : $(config.playbackSelector).hide(); 
             this.xshow(config.recorderControls, this[state].recBtnsShow);
             this.xen(config.recorderControls, this[state].recBtnsEn);
@@ -166,7 +190,7 @@ var YarmUi = function () {
         displayState.set('stop');
     });
     $(".upload").click(function (e) {
-
+        displayState.set('uploading', 'Uploading...');
         var fd = new FormData();
         fd.append("upload_file[filename]", yrec.getBlob(), yrec.getName());
 
@@ -181,12 +205,18 @@ var YarmUi = function () {
                     if (this.readyState == 4) {
                         var response = $.parseJSON(this.responseText);
                         if (!response) {
-                            noteUploadResult(false, "AJAX null response");
-                        } else if (response.status != 'success') {
-                            noteUploadResult(false, "Upload-- " + this.responseText);
+                            response= {"status":"fail","err":"AJAX null response"};
+                        }    
+                        if (response.status != 'success') {
+                            displayState.set('uploaded', "Upload error: " + response.err);
                         } else {
                             //success
-                            noteUploadResult(true, "Upload-- " + this.responseText);
+                            displayState.set('uploaded', "Uploaded to: " + response.url);
+                            
+                            //invoke callback function, if any
+                            if(config.uploadCallback && typeof config.uploadCallback === "function"){
+                                config.uploadCallback(response.url);
+                            }
                         }
                     }
                     break;
@@ -201,12 +231,6 @@ var YarmUi = function () {
         
     });
 
-    function noteUploadResult(successFlg, msg) {
-        log(msg);
-        if (!successFlg) {
-            console.error(msg);
-        }
-    }
 
     //prevent sticky button outline when clicking buttons
     $(".recorder .button").click(function (e) {
@@ -214,9 +238,8 @@ var YarmUi = function () {
     });
 
 
+    //configure initial state of the display
     displayState.set('enable');
     $(".recorder").show();
-    
-    
 };
 

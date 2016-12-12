@@ -37,6 +37,9 @@
     cursor: not-allowed;
 }
 
+.recorder .progress{
+    margin-top:30px;
+}
 
 /*******************************
  * player elements
