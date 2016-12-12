@@ -73,7 +73,7 @@ class YarmUpload {
             //Directory does not exist, create it.
             mkdir($save_folder, 0755, true);
         }
-        $response['url']= "$filename";
+        $response['destination']= "$filename";
         return move_uploaded_file($tmp_name, "$save_folder/$filename");
     }
 

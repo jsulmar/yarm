@@ -190,7 +190,6 @@ var YarmUi = function () {
         displayState.set('stop');
     });
     $(".upload").click(function (e) {
-        displayState.set('uploading', 'Uploading...');
         var fd = new FormData();
         fd.append("upload_file[filename]", yrec.getBlob(), yrec.getName());
 
@@ -211,11 +210,11 @@ var YarmUi = function () {
                             displayState.set('uploaded', "Upload error: " + response.err);
                         } else {
                             //success
-                            displayState.set('uploaded', "Uploaded to: " + response.url);
+                            displayState.set('uploaded', response.destination ? ("Uploaded to: " + response.destination) : '' );
                             
                             //invoke callback function, if any
                             if(config.uploadCallback && typeof config.uploadCallback === "function"){
-                                config.uploadCallback(response.url);
+                                config.uploadCallback(response.destination);
                             }
                         }
                     }
@@ -227,7 +226,7 @@ var YarmUi = function () {
         };
         xhr.send(fd);
 
-        displayState.set('stop');
+        displayState.set('uploading', 'Uploading...');
         
     });
 
