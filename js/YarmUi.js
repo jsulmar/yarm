@@ -210,12 +210,20 @@ var YarmUi = function () {
                             displayState.set('uploaded', "Upload error: " + response.err);
                         } else {
                             //success
-                            displayState.set('uploaded', response.destination ? ("Uploaded to: " + response.destination) : '' );
+                            //compose default progress statement
+                            var progress= response.destination ? ("Uploaded to: " + response.destination) : '';
                             
                             //invoke callback function, if any
                             if(config.uploadCallback && typeof config.uploadCallback === "function"){
-                                config.uploadCallback(response.destination);
+                                var params= { destination:response.destination, newProgress: null};
+                                config.uploadCallback(params);
+                                if(params.newProgress !== null){
+                                    progress= params.newProgress;
+                                }
                             }
+                            
+                            //display the progress result
+                            displayState.set('uploaded',  progress);
                         }
                     }
                     break;

@@ -26,7 +26,7 @@
 /*******************************
  * recorder controls
  */
-.recorder .button{
+.recorder .controls .button{
     display:none;
     margin-top:30px;
 }
