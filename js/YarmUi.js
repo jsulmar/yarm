@@ -1,6 +1,6 @@
-/* 
+/* dev
  * YarmUi.js
- * Copyright (c) 2016 Joe Sulmar
+ * Copyright (c) 2016-2017 Joe Sulmar
  * provided under MIT License
  */
 
@@ -15,8 +15,8 @@
  *  stop    stopped recording is complete
  *  
  * DOM:
- *  appliances (e.g. recorder, player) alone are enclosed in a container
- *  buttons alone for each appliance are enclosed in a container
+ *  appliances (e.g. recorder, player) are enclosed in a container
+ *  buttons for each appliance are enclosed in a container
  *  
  *  Recorder Buttons:
  *  approval, record, stop, save, upload
@@ -24,33 +24,77 @@
 
 
 var YarmUi = function () {
-    var that=this;
+    var self=this;
     
+    //these defaults can be overriden by the constructor
     var DEFAULTS = {
         //the type of media to be recorded
         media: {type: 'audio/ogg', ext: '.ogg'},
         
-        //the script url to be invoked for uploading the recording
+        //URL of the recording upload habndler
         uploadHandlerUrl: window.location.href + '/php/catch.php',
-        
-        //select the type of player to be used for reviewing the recording
+
+        //An optional callback invoked upon successful upload of a recording.
+        uploadCallback:     null,
+
+        //select the player type (e.g. "YarmHtmlPlayer", "YarmJPlayer")
         playerType: "YarmHtmlPlayer",
         
         //The DOM must provide a container with a recorder child.
         //The recorder contains controls with buttons, and a playback element.
         applianceContainer: "#appliances",
         recorderControls: "#appliances .recorder .controls",
-        playbackSelector: "#appliances .recorder .playback",
+        playbackSelector: "#appliances .recorder .playback .player",
         
-        //An optional callback can be invoked upon successful upload of a recording.
-        uploadCallback:     null
+        //states and behaviors for the appliances and buttons
+        displayStates:{
+            //request permission to use microphone
+            enable: [
+                {fn:'xshow', grp:'.controls', items:'.approval'},
+                {fn:'xen', grp:'.controls', items:'.approval'},
+                {fn:'xshow', grp:'.playback', items:''}
+            ],
+            //ready to record
+            ready: [
+                {fn:'xshow', grp:'.controls', items:'.record, .stop, .save, .upload'},
+                {fn:'xen', grp:'.controls', items:'.record'},
+                {fn:'xshow', grp:'.playback', items:''}
+            ],
+            //recording is in progress
+            record: [
+                {fn:'xshow', grp:'.controls', items:'.record, .stop, .save, .upload'},
+                {fn:'xen', grp:'.controls', items:'.stop'},
+                {fn:'xshow', grp:'.playback', items:''}
+            ],
+            //recording is completed
+            stop: [
+                {fn:'xshow', grp:'.controls', items:'.record, .stop, .save, .upload'},
+                {fn:'xen', grp:'.controls', items:'.record, .save, .upload'},
+                {fn:'xshow', grp:'.playback', items:'.player'}
+            ],
+            //file is being uploaded
+            uploading: [
+                {fn:'xshow', grp:'.controls', items:'.record, .stop, .save, .upload'},
+                {fn:'xen', grp:'.controls', items:''},
+                {fn:'xshow', grp:'.playback', items:'.player'}
+            ],
+            //upload is complete
+            uploaded: [
+                {fn:'xshow', grp:'.controls', items:'.record, .stop, .save, .upload'},
+                {fn:'xen', grp:'.controls', items:''},
+                {fn:'xshow', grp:'.playback', items:'.player'}
+            ]
+        }
+        
     };
+
+
 
     /*
      * logging utility: print to console and screen 
      * @param msg: the message to be displayed
      */
-    function log(msg) {
+    this.log= function(msg) {
         window.log.innerHTML += "\n" + msg;
         return console.log(msg);
     }
@@ -59,20 +103,20 @@ var YarmUi = function () {
     /*
      * initialize configuration to default values
      */
-    var config = DEFAULTS;
+    self.config = DEFAULTS;
 
     /*
      * overide DEFAULTS with args supplied to the constructor (if any)
      */
     var args = arguments[0] || {};
     for (var arg in args) {
-        config[arg] = args[arg];
+        self.config[arg] = args[arg];
     }
 
     /*
     * instantiate a player of the specified type
     */
-    var player= new YarmPlayer('.playback', config.playerType);
+    var player= new YarmPlayer(self.config.playbackSelector, self.config.playerType);
     var yrec;   //the recorder object, constructed by 'enable' handler
     var stream; //the MediaStream to be used for the recorder
 
@@ -83,8 +127,8 @@ var YarmUi = function () {
     function createRecorder(strm) {
         if (strm !== undefined) {
             stream = strm;
-            yrec = new YarmRecorder(strm, config.media, recordingStopped);
-            displayState.set('ready');
+            yrec = new YarmRecorder(strm, self.config.media, recordingStopped);
+            self.displayState.set('ready');
         }
     }
 
@@ -104,39 +148,9 @@ var YarmUi = function () {
      * 
      * manage the display (states of appliances and buttons)
      */
-    var displayState={
-        //request permission to use the microphone/recorder
-        enable: {
-            playback: false, 
-            recBtnsShow:'.approval', 
-            recBtnsEn:  '.approval'},
-        //recorder is ready
-        ready:  {
-            playback: false, 
-            recBtnsShow:'.record, .stop, .save, .upload', 
-            recBtnsEn:  '.record'},
-        //recording is in progress
-        record: {
-            playback: false, 
-            recBtnsShow:'.record, .stop, .save, .upload', 
-            recBtnsEn:  '.stop'},
-        //recording is completed
-        stop:   {
-            playback: true, 
-            recBtnsShow:'.record, .stop, .save, .upload', 
-            recBtnsEn:  '.record, .save, .upload'},
-        //recording is completed
-        uploading:   {
-            playback: false, 
-            recBtnsShow:'.record, .stop, .save, .upload', 
-            recBtnsEn:  ''},
-        //upload is complete
-        uploaded:   {
-            playback: false, 
-            recBtnsShow:'.record, .stop, .save, .upload', 
-            recBtnsEn:  ''},
+    this.displayState={
 
-        //make visible  only the specified members within the specified group
+        //exclusive show:-- make visible only the specified members within the specified group
         xshow: function(grp, members){
                 $(grp).children().filter(members).show();
                 $(grp).children().filter(':not(' + members + ')').hide();
@@ -148,22 +162,28 @@ var YarmUi = function () {
                 $(grp).children().filter(':not(' + members + ')').prop('disabled', true).addClass('disabled');	
         },
 
-        set: function(state, progress){
-            if(progress){
-                $(config.applianceContainer + ' .recorder .progress').html(progress);
+        //implement the specified state and display the progressMsg if any.
+        set: function(state, progressMsg){
+            if(progressMsg){
+                $(self.config.applianceContainer + ' .recorder .progress').html(progressMsg);
             }
-            this[state].playback ? $(config.playbackSelector).show() : $(config.playbackSelector).hide(); 
-            this.xshow(config.recorderControls, this[state].recBtnsShow);
-            this.xen(config.recorderControls, this[state].recBtnsEn);
+            var that=this;
+            
+            //execute the directives (xshow, xen) associated with the requested state
+            $.each(self.config.displayStates[state], function( index, directive ) {
+                if ($.isFunction( that[directive.fn] )){
+                    that[directive.fn](directive.grp, directive.items);
+                }
+            });
         }
-    }
+    };
 
 
 
     /*
      * button handlers
      */
-    $(".approval").click(function (e) {
+    this.approval_handler= function(){
         /*
          * YarmLocalMedia will either return a steam or undefined.
          * In the latter case, it will create a stream and invoke its callback
@@ -176,25 +196,29 @@ var YarmUi = function () {
             createRecorder(stream);
         }));
 
-    });
-    $(".record").click(function (e) {
+    };
+    
+    this.record_handler= function(){
         yrec.start();
-        displayState.set('record');
-    });
-    $(".stop").click(function (e) {
+        self.displayState.set('record');
+    };
+    
+    this.stop_handler= function(){
         yrec.stop();
-        displayState.set('stop');
-    });
-    $(".save").click(function (e) {
+        self.displayState.set('stop');
+    };
+
+    this.save_handler= function(){
         document.getElementById('media-save').click();
-        displayState.set('stop');
-    });
-    $(".upload").click(function (e) {
+        self.displayState.set('stop');
+    };
+    
+    this.upload_handler= function(){
         var fd = new FormData();
         fd.append("upload_file[filename]", yrec.getBlob(), yrec.getName());
 
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", config.uploadHandlerUrl, true);
+        xhr.open("POST", self.config.uploadHandlerUrl, true);
 
         xhr.onreadystatechange = function (evt) {
             switch (this.status) {
@@ -207,23 +231,23 @@ var YarmUi = function () {
                             response= {"status":"fail","err":"AJAX null response"};
                         }    
                         if (response.status != 'success') {
-                            displayState.set('uploaded', "Upload error: " + response.err);
+                            self.displayState.set('uploaded', "Upload error: " + response.err);
                         } else {
                             //success
                             //compose default progress statement
                             var progress= response.destination ? ("Uploaded to: " + response.destination) : '';
                             
                             //invoke callback function, if any
-                            if(config.uploadCallback && typeof config.uploadCallback === "function"){
+                            if(self.config.uploadCallback && typeof self.config.uploadCallback === "function"){
                                 var params= { destination:response.destination, newProgress: null};
-                                config.uploadCallback(params);
+                                self.config.uploadCallback(params);
                                 if(params.newProgress !== null){
                                     progress= params.newProgress;
                                 }
                             }
                             
                             //display the progress result
-                            displayState.set('uploaded',  progress);
+                            self.displayState.set('uploaded',  progress);
                         }
                     }
                     break;
@@ -234,19 +258,25 @@ var YarmUi = function () {
         };
         xhr.send(fd);
 
-        displayState.set('uploading', 'Uploading...');
-        
+        self.displayState.set('uploading', 'Uploading...');
+    };
+
+    //buttons are delegated to parent handler
+    $(".controls").on( "click", "button", function( e ) {
+        var handler=$(this)[0].classList[0] + '_handler';
+        if ($.isFunction(self[handler])){
+            self[handler]();
+        }
     });
-
-
+    
     //prevent sticky button outline when clicking buttons
     $(".recorder .button").click(function (e) {
         this.blur();
     });
 
-
+    
     //configure initial state of the display
-    displayState.set('enable');
+    this.displayState.set('enable');
     $(".recorder").show();
 };
 

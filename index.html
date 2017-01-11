@@ -2,7 +2,7 @@
 <!--
  * Demonstration of yarm recorder
 
- * Copyright (c) 2016 Joe Sulmar
+ * Copyright (c) 2016-2017 Joe Sulmar
  * provided under MIT License
 -->
 <html>
@@ -24,6 +24,9 @@
                     <h2>YARM Recorder</h2>
                 </div>
                 <div class="controls">
+                    <!-- NOTE: the first specified class for each button is 
+                    significant for handler assignment
+                    -->
                     <button  class="approval button disabled" disabled>Enable Microphone</button>
                     <button  class="record button disabled" disabled>Record</button>
                     <button  class="stop button disabled" disabled>Stop</button>
@@ -32,8 +35,11 @@
                 </div>
                 <div class="progress">
                 </div>
+                
                 <div class="playback">
-
+                    <div class="player">
+                        <!--  the media player will be dynamically installed here -->
+                    </div>
                 </div>
                 <div class="footer">
                     <a id="media-save" ></a>
@@ -61,7 +67,7 @@
         <footer>
             <section class="v-space">
                 <hr>
-                <p>Copyright (c) 2016 Joe Sulmar -- provided under MIT License</p>
+                <p>Copyright (c) 2016-2017 Joe Sulmar -- provided under MIT License</p>
             </section>
         </footer>
 

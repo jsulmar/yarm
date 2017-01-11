@@ -51,6 +51,6 @@ Server script accepts files uploaded by the YarmUi client
 * catch.php- Script runs on the host, receives and saves the .ogg file
 
 ##License
-Copyright (c) 2016 Joe Sulmar  
+Copyright (c) 2016-2017 Joe Sulmar  
 Licensed under the MIT License
 
