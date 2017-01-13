@@ -156,10 +156,12 @@ var YarmUi = function () {
                 $(grp).children().filter(':not(' + members + ')').hide();
         },
 
-        //exclusive enable:-- enable only the specified members within the specified group
+        //exclusive enable:-- enable only the specified member buttons within the specified group
         xen: function(grp, members){
-                $(grp).children().filter(members).prop('disabled', false).removeClass('disabled');
-                $(grp).children().filter(':not(' + members + ')').prop('disabled', true).addClass('disabled');	
+                //enable designated buttons
+                $(grp).children().filter(members).filter('button').prop('disabled', false).removeClass('disabled');
+                //disable all other buttons in the grp
+                $(grp).children().filter(':not(' + members + ')').filter('button').prop('disabled', true).addClass('disabled');	
         },
 
         //implement the specified state and display the progressMsg if any.
@@ -237,6 +239,9 @@ var YarmUi = function () {
                             //compose default progress statement
                             var progress= response.destination ? ("Uploaded to: " + response.destination) : '';
                             
+                            //display the progress result
+                            self.displayState.set('uploaded',  progress);
+                            
                             //invoke callback function, if any
                             if(self.config.uploadCallback && typeof self.config.uploadCallback === "function"){
                                 var params= { destination:response.destination, newProgress: null};
@@ -246,8 +251,6 @@ var YarmUi = function () {
                                 }
                             }
                             
-                            //display the progress result
-                            self.displayState.set('uploaded',  progress);
                         }
                     }
                     break;
